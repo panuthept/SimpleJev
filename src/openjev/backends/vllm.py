@@ -21,6 +21,7 @@ class VLLMBackend(Backend):
         self.base_url = base_url
         self._client = None
         self._tok = None
+        self.load()
 
     def load(self) -> None:
         if self._client is not None:
@@ -38,8 +39,6 @@ class VLLMBackend(Backend):
         return self._tok.decode(ids[0])
 
     def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
-        self.load()
-
         enc = self._tok(prompt, return_tensors="pt")
         response = self._client.chat.completions.create(
             model=self.model_id,
