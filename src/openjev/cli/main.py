@@ -167,12 +167,18 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
 
     p = argparse.ArgumentParser(prog="openjev", description="OpenJev REPL")
-    p.add_argument("--backend", default="mock", help="mock | hf")
-    p.add_argument("--model", default=None, help="model id for hf backend")
+    p.add_argument("--backend", default="mock", help="mock | hf | vllm")
+    p.add_argument("--model", default=None, help="model id for backend")
+    p.add_argument("--api_key", default=None, help="API key for backend")
+    p.add_argument("--base_url", default=None, help="Base URL for backend")
     p.add_argument("--file", default=None, help="run a JSON request file (state + questions) and exit")
     p.add_argument("--version", action="version", version=f"openjev {__version__}")
     args = p.parse_args(argv)
     kwargs = {"model_id": args.model} if args.model else {}
+    if args.api_key:
+        kwargs["api_key"] = args.api_key
+    if args.base_url:
+        kwargs["base_url"] = args.base_url
     backend = get_backend(args.backend, **kwargs)
     if args.file:
         with open(args.file, encoding="utf-8") as fh:
