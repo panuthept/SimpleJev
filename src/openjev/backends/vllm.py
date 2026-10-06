@@ -33,28 +33,26 @@ class VLLMBackend(Backend):
         self._tok = AutoTokenizer.from_pretrained(self.model_id)
         self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
-    def _first_token_id(self, label: str) -> int:
+    def _first_token(self, label: str) -> int:
         ids = self._tok.encode(label, add_special_tokens=False)
-        return ids[0]
+        return self._tok.decode(ids[0])
 
     def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
         self.load()
 
+        enc = self._tok(prompt, return_tensors="pt")
         response = self._client.chat.completions.create(
             model=self.model_id,
             messages=[{"role": "user", "content": prompt}],
             logprobs=True,
             top_logprobs=20,
+            extra_body={
+                "chat_template_kwargs": {
+                    "enable_thinking": False
+                }
+            }
         )
-        print(response.choices[0].message.content)
-        for token in response.choices[0].logprobs.content:
-            print(
-                token.token,
-                token.logprob,
-                token.top_logprobs
-            )
-
-        # last = out.logits[0, -1].float()
-        # ids = [self._first_token_id(label) for label in labels]
-        # logits = [float(last[i]) for i in ids]
-        # return logits, int(enc["input_ids"].shape[1])
+        pred_tokens = {top_logprob.token: top_logprob.logprob for top_logprob in response.choices[0].logprobs.content[0].top_logprobs}
+        cand_tokens = [self._first_token(label) for label in labels]
+        logits = [pred_tokens.get(token, float("-inf")) for token in cand_tokens]
+        return logits, int(enc["input_ids"].shape[1])
