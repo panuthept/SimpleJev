@@ -15,6 +15,7 @@ from openjev.backends.base import Backend
 
 class VLLMBackend(Backend):
     def __init__(self, model_id: str = "Qwen/Qwen2.5-0.5B-Instruct", api_key: str | None = None, base_url: str | None = None, **kwargs):
+        super().__init__(**kwargs)
         self.model_id = model_id
         self.name = f"openjev-vllm/{model_id}"
         self.api_key = api_key

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import time
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 from openjev.core.primitives import (
     Answer,
@@ -35,7 +35,7 @@ def render_state(state: Any) -> str:
     return json.dumps(state, ensure_ascii=False, indent=2)
 
 
-def render_prompt(state: Any, instructions: str, labels: list[str]) -> str:
+def default_render_prompt(state: Any, instructions: str, labels: list[str]) -> str:
     """Chat-style prompt whose next token is expected to be one of ``labels``."""
     options = "\n".join(f"- {label}" for label in labels)
     return (
@@ -50,6 +50,9 @@ def render_prompt(state: Any, instructions: str, labels: list[str]) -> str:
 
 class Backend(ABC):
     name: str = "base"
+
+    def __init__(self, render_prompt: Callable = None, **kwargs):
+        self.render_prompt = render_prompt or default_render_prompt
 
     @abstractmethod
     def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
@@ -66,18 +69,18 @@ class Backend(ABC):
             if isinstance(q, Choice):
                 labels = q.option_keys()
                 logits, n_in = self.score_options(
-                    render_prompt(request.state, q.instructions, labels), labels
+                    self.render_prompt(request.state, q.instructions, labels), labels
                 )
                 answers[qid] = build_choice_answer(q, logits, temperature)
             elif isinstance(q, Score):
                 labels = [f"{lvl} ({q.legend[str(lvl)]})" for lvl in q.levels()]
                 logits, n_in = self.score_options(
-                    render_prompt(request.state, q.instructions, labels), labels
+                    self.render_prompt(request.state, q.instructions, labels), labels
                 )
                 answers[qid] = build_score_answer(q, logits, temperature)
             elif isinstance(q, Noul):
                 logits, n_in = self.score_options(
-                    render_prompt(request.state, q.instructions, NOUL_LABELS), NOUL_LABELS
+                    self.render_prompt(request.state, q.instructions, NOUL_LABELS), NOUL_LABELS
                 )
                 answers[qid] = build_noul_answer(logits[0], logits[1], temperature)
             else:  # pragma: no cover
