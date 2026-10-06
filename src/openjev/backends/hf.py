@@ -15,6 +15,7 @@ from openjev.backends.base import Backend
 
 class HFBackend(Backend):
     def __init__(self, model_id: str = "Qwen/Qwen2.5-0.5B-Instruct", device: str | None = None, **kwargs):
+        super().__init__(**kwargs)
         self.model_id = model_id
         self.name = f"openjev-hf/{model_id}"
         self.device = device
