@@ -55,7 +55,7 @@ class Backend(ABC):
         self.render_prompt = render_prompt or default_render_prompt
 
     @abstractmethod
-    def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
+    def score_options(self, model: str, prompt: str, labels: list[str]) -> tuple[list[float], int]:
         """Return one logit per label plus the number of input tokens consumed."""
 
     def load(self) -> None:  # optional warm-up
@@ -69,18 +69,24 @@ class Backend(ABC):
             if isinstance(q, Choice):
                 labels = q.option_keys()
                 logits, n_in = self.score_options(
-                    self.render_prompt(request.state, q.instructions, labels), labels
+                    request.model,
+                    self.render_prompt(request.state, q.instructions, labels), 
+                    labels
                 )
                 answers[qid] = build_choice_answer(q, logits, temperature)
             elif isinstance(q, Score):
                 labels = [f"{lvl} ({q.legend[str(lvl)]})" for lvl in q.levels()]
                 logits, n_in = self.score_options(
-                    self.render_prompt(request.state, q.instructions, labels), labels
+                    request.model,
+                    self.render_prompt(request.state, q.instructions, labels), 
+                    labels
                 )
                 answers[qid] = build_score_answer(q, logits, temperature)
             elif isinstance(q, Noul):
                 logits, n_in = self.score_options(
-                    self.render_prompt(request.state, q.instructions, NOUL_LABELS), NOUL_LABELS
+                    request.model,
+                    self.render_prompt(request.state, q.instructions, NOUL_LABELS), 
+                    NOUL_LABELS
                 )
                 answers[qid] = build_noul_answer(logits[0], logits[1], temperature)
             else:  # pragma: no cover
@@ -89,5 +95,5 @@ class Backend(ABC):
             usage.output_tokens += len(labels) if not isinstance(q, Noul) else 2
         latency_ms = (time.perf_counter() - t0) * 1000
         return SystemOneResponse(
-            model=self.name, answers=answers, usage=usage, latency_ms=round(latency_ms, 2)
+            model=request.model, answers=answers, usage=usage, latency_ms=round(latency_ms, 2)
         )

@@ -15,7 +15,7 @@ from openjev.backends.base import Backend
 class MockBackend(Backend):
     name = "openjev-mock"
 
-    def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
+    def score_options(self, model: str, prompt: str, labels: list[str]) -> tuple[list[float], int]:
         logits: list[float] = []
         for label in labels:
             h = hashlib.sha256((prompt + "\x00" + label).encode("utf-8")).digest()
