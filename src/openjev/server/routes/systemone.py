@@ -1,8 +1,6 @@
-import json
-import asyncio
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from openjev import Choice, Noul, Score, SystemOneRequest, SystemOneResponse
-from fastapi.responses import JSONResponse, StreamingResponse
 
 router = APIRouter(tags=["Systemone"])
 
@@ -32,34 +30,3 @@ async def systemone(request: Request):
     ))
 
     return JSONResponse(response.model_dump())
-
-
-
-    # from root.root import RØØT
-    # root = RØØT(**root_configuration)
-
-    # if body.get("stream"):
-    #     return StreamingResponse(
-    #         content=sse_wrapper(root.run(body=body)),
-    #         media_type="text/event-stream",
-    #     )
-
-    # try:
-    #     result = await asyncio.wait_for(
-    #         asyncio.to_thread(root.run, body=body),
-    #         timeout=timeout,
-    #     )
-    #     return JSONResponse(content=result, media_type="application/json")
-    # except asyncio.TimeoutError:
-    #     return JSONResponse(
-    #         content={"error": "Request timed out."},
-    #         status_code=504,
-    #         media_type="application/json"
-    #     )
-    # except Exception as e:
-    #     print(f"Error during chat completion: {e}")
-    #     return JSONResponse(
-    #         content={"error": str(e)},
-    #         status_code=500,
-    #         media_type="application/json"
-    #     )
