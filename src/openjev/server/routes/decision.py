@@ -5,8 +5,8 @@ from openjev import Choice, Noul, Score, SystemOneRequest, SystemOneResponse
 router = APIRouter()
 
 
-@router.post("/systemone")
-async def systemone(request: Request):
+@router.post("/decision")
+async def decision(request: Request):
     timeout = request.app.state.timeout
     backend = request.app.state.backend
 

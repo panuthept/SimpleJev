@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from openjev import Choice, Noul, Score, SystemOneRequest, SystemOneResponse
 
-router = APIRouter(tags=["Decisions"])
+router = APIRouter()
 
 
 @router.post("/decisions")
