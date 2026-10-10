@@ -24,7 +24,7 @@ class Choice(BaseModel):
     type: Literal["choice"] = "choice"
     instructions: str
     options: list[str] | None = None
-    criteria: dict[str, str] | None = None
+    criteria: dict[str, str | None] | None = None
 
     @model_validator(mode="after")
     def _check_options(self) -> Choice:

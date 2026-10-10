@@ -44,7 +44,7 @@ class HFBackend(Backend):
         ids = self._tok.encode(label, add_special_tokens=False)
         return ids[0]
 
-    def score_options(self, prompt: str, labels: list[str]) -> tuple[list[float], int]:
+    def score_options(self, model: str, prompt: str, labels: list[str]) -> tuple[list[float], int]:
         self.load()
         torch = self._torch
         enc = self._tok(prompt, return_tensors="pt").to(self.device)
